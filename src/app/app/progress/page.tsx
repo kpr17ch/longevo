@@ -42,8 +42,8 @@ export default function ProgressPage() {
   }, []);
 
   return (
-    <div className="min-h-screen px-6 py-8 pb-24 bg-background relative overflow-hidden">
-      <div className="max-w-2xl mx-auto space-y-10 relative z-10">
+    <div className="min-h-screen px-6 py-8 pb-24">
+      <div className="max-w-2xl mx-auto space-y-10">
         <div className="space-y-3 text-center">
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
             Progress
@@ -68,7 +68,7 @@ export default function ProgressPage() {
                     }
                   : { opacity: 1, scale: 1, y: 0, rotate: 0 }
               }
-              exit={{ opacity: 0 }}
+              exit={{ opacity: 0, scale: 0.3, y: windowHeight * 0.7 }}
               transition={{ duration: 1, ease: 'easeInOut' }}
               className={cn(
                 'mb-16 relative z-0',
@@ -87,26 +87,32 @@ export default function ProgressPage() {
         </AnimatePresence>
 
         {/* Success Message nach dem Pflanzen */}
-        {isPlanted && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-center space-y-6"
-          >
+        <AnimatePresence>
+          {isPlanted && (
+            <motion.div
+              initial={{ opacity: 0, y: 30, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ 
+                duration: 0.7, 
+                delay: 0.5,
+                ease: [0.16, 1, 0.3, 1] // smooth easing
+              }}
+              className="text-center space-y-6 mb-16 pt-16"
+            >
             {/* Grid mit 3 Cards */}
             <div className="flex gap-4 justify-center items-start">
               {/* Card 1: Baum */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.5, type: 'spring', stiffness: 200 }}
+                initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.7, type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <div className="bg-card border border-border/40 rounded-xl px-3 py-6 shadow-lg w-fit">
+                <div className="bg-card border border-border/40 rounded-xl px-4 py-8 shadow-lg w-fit">
                   {/* Animierter Baum – stilisiert wie im Icon, aber lebendig */}
                   <motion.svg
-                    width="80"
-                    height="80"
+                    width="100"
+                    height="100"
                     viewBox="0 0 80 80"
                     xmlns="http://www.w3.org/2000/svg"
                     className="mx-auto"
@@ -154,14 +160,14 @@ export default function ProgressPage() {
 
               {/* Card 2: Platzhalter */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.6, type: 'spring', stiffness: 200 }}
+                initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.8, type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <div className="bg-card border border-border/40 rounded-xl px-3 py-6 shadow-lg w-fit">
-                  <div className="w-20 h-20 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                      <span className="text-2xl text-muted-foreground/40">🌱</span>
+                <div className="bg-card border border-border/40 rounded-xl px-4 py-8 shadow-lg w-fit">
+                  <div className="w-24 h-24 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                      <span className="text-3xl text-muted-foreground/40">🌱</span>
                     </div>
                   </div>
                 </div>
@@ -169,14 +175,14 @@ export default function ProgressPage() {
 
               {/* Card 3: Platzhalter */}
               <motion.div
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.7, type: 'spring', stiffness: 200 }}
+                initial={{ opacity: 0, scale: 0.6, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ delay: 0.9, type: 'spring', stiffness: 200, damping: 15 }}
               >
-                <div className="bg-card border border-border/40 rounded-xl px-3 py-6 shadow-lg w-fit">
-                  <div className="w-20 h-20 flex items-center justify-center">
-                    <div className="w-12 h-12 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-                      <span className="text-2xl text-muted-foreground/40">🌱</span>
+                <div className="bg-card border border-border/40 rounded-xl px-4 py-8 shadow-lg w-fit">
+                  <div className="w-24 h-24 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
+                      <span className="text-3xl text-muted-foreground/40">🌱</span>
                     </div>
                   </div>
                 </div>
@@ -184,21 +190,32 @@ export default function ProgressPage() {
             </div>
 
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.7 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.0, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
               className="space-y-4"
             >
-              <h2 className="text-2xl font-semibold text-emerald-600">
+              <motion.h2 
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 1.1, duration: 0.5 }}
+                className="text-3xl md:text-4xl font-semibold text-emerald-600"
+              >
                 Tree Planted!
-              </h2>
-              <p className="text-muted-foreground">
+              </motion.h2>
+              <motion.p 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 1.2, duration: 0.5 }}
+                className="text-base md:text-lg text-muted-foreground"
+              >
                 Your 10-day streak has grown into a beautiful tree. Keep going to
                 grow your forest!
-              </p>
+              </motion.p>
             </motion.div>
           </motion.div>
-        )}
+          )}
+        </AnimatePresence>
 
         {/* Hero Section - erscheint beim Scrollen */}
         <motion.section
@@ -210,66 +227,76 @@ export default function ProgressPage() {
         >
           {/* Hero Content */}
           <div className="text-center space-y-6">
-            {/* Erster Text */}
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0 }}
-              className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground"
-            >
-              Complete your set of 10 cards
-            </motion.h2>
-            
-            {/* Animierter Pfeil nach unten */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex justify-center"
-            >
-              <motion.svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-emerald-500"
-                animate={{
-                  y: [0, 8, 0],
-                }}
-                transition={{
-                  duration: 1.5,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                }}
-              >
-                <path d="M12 5v14" />
-                <path d="m19 12-7 7-7-7" />
-              </motion.svg>
-            </motion.div>
-            
-            {/* Zweiter Text */}
-            <motion.h2
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-              className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-emerald-500"
-            >
-              Once you do, we'll plant a real tree for you out in the world.
-            </motion.h2>
+            {/* Erster Text - nur anzeigen wenn Card noch nicht geklickt wurde */}
+            {!isPlanted && (
+              <>
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0 }}
+                  className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground"
+                >
+                  Complete your set of 10 cards
+                </motion.h2>
+                
+                {/* Animierter Pfeil nach unten */}
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.3 }}
+                  className="flex justify-center"
+                >
+                  <motion.svg
+                    width="32"
+                    height="32"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-emerald-500"
+                    animate={{
+                      y: [0, 8, 0],
+                    }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
+                  >
+                    <path d="M12 5v14" />
+                    <path d="m19 12-7 7-7-7" />
+                  </motion.svg>
+                </motion.div>
+                
+                {/* Zweiter Text */}
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: 0.6 }}
+                  className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-emerald-500"
+                >
+                  Once you do, we'll plant a real tree for you out in the world.
+                </motion.h2>
+              </>
+            )}
 
-            {/* Community Teil */}
+            {/* Community Teil - verschiebt sich nach unten wenn Card geklickt wird */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.9 }}
+              animate={{
+                y: isPlanted ? 200 : 0,
+              }}
+              transition={{ 
+                duration: 0,
+                delay: 0
+              }}
               className="pt-12 space-y-4"
             >
               <h3 className="text-2xl md:text-3xl font-semibold tracking-tight">
@@ -283,9 +310,15 @@ export default function ProgressPage() {
             {/* Share Button */}
             <motion.div
               initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 1.05 }}
+              animate={{
+                y: isPlanted ? 200 : 0,
+              }}
+              transition={{ 
+                duration: 0,
+                delay: 0
+              }}
               className="flex justify-center pt-4"
             >
               <ShareButton 
@@ -302,7 +335,15 @@ export default function ProgressPage() {
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.8, delay: 1.2 }}
+              animate={{
+                y: isPlanted ? 200 : 0,
+                opacity: 1,
+                scale: 1,
+              }}
+              transition={{ 
+                duration: 0,
+                delay: 0
+              }}
               className="flex justify-center items-center py-8"
             >
               <RadialIntro orbitItems={COMMUNITY_ITEMS} stageSize={320} imageSize={60} />
@@ -318,47 +359,47 @@ export default function ProgressPage() {
 const COMMUNITY_ITEMS = [
   {
     id: 1,
-    name: 'User 1',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
+    name: 'Framer University',
+    src: 'https://pbs.twimg.com/profile_images/1602734731728142336/9Bppcs67_400x400.jpg',
   },
   {
     id: 2,
-    name: 'User 2',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
+    name: 'arhamkhnz',
+    src: 'https://pbs.twimg.com/profile_images/1897311929028255744/otxpL-ke_400x400.jpg',
   },
   {
     id: 3,
-    name: 'User 3',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3',
+    name: 'Skyleen',
+    src: 'https://pbs.twimg.com/profile_images/1948770261848756224/oPwqXMD6_400x400.jpg',
   },
   {
     id: 4,
-    name: 'User 4',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user4',
+    name: 'Shadcn',
+    src: 'https://pbs.twimg.com/profile_images/1593304942210478080/TUYae5z7_400x400.jpg',
   },
   {
     id: 5,
-    name: 'User 5',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user5',
+    name: 'Adam Wathan',
+    src: 'https://pbs.twimg.com/profile_images/1677042510839857154/Kq4tpySA_400x400.jpg',
   },
   {
     id: 6,
-    name: 'User 6',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user6',
+    name: 'Guillermo Rauch',
+    src: 'https://pbs.twimg.com/profile_images/1783856060249595904/8TfcCN0r_400x400.jpg',
   },
   {
     id: 7,
-    name: 'User 7',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user7',
+    name: 'Jhey',
+    src: 'https://pbs.twimg.com/profile_images/1534700564810018816/anAuSfkp_400x400.jpg',
   },
   {
     id: 8,
-    name: 'User 8',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user8',
+    name: 'David Haz',
+    src: 'https://pbs.twimg.com/profile_images/1927474594102784000/Al0g-I6o_400x400.jpg',
   },
   {
     id: 9,
-    name: 'User 9',
-    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user9',
+    name: 'Matt Perry',
+    src: 'https://pbs.twimg.com/profile_images/1690345911149375488/wfD0Ai9j_400x400.jpg',
   },
 ];

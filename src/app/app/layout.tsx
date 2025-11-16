@@ -3,6 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import { Home, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AuroraBackground } from "@/components/ui/aurora-background";
 
 export default function AppLayout({
   children,
@@ -18,8 +19,11 @@ export default function AppLayout({
   ];
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-background overflow-hidden">
-      <div className="flex-1 overflow-y-auto pb-20">{children}</div>
+    <div className="fixed inset-0 flex flex-col overflow-hidden">
+      <AuroraBackground className="fixed inset-0 pointer-events-none z-0">
+        <div />
+      </AuroraBackground>
+      <div className="flex-1 overflow-y-auto pb-20 relative z-10">{children}</div>
 
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t z-50">
         <div className="max-w-md mx-auto">
