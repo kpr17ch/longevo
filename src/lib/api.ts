@@ -48,7 +48,7 @@ export interface ApiResponse {
   };
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://52.14.71.203:8443";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "/api";
 
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -150,7 +150,8 @@ export async function executeBiohackerAgent(
   
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    const timeoutMs = 7 * 60 * 1000; // 7 minutes
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
     
     const response = await fetch(url, {
       method: "POST",
@@ -168,28 +169,52 @@ export async function executeBiohackerAgent(
 
     if (!response.ok) {
       let errorText = "";
+      let errorDetails = "";
       try {
-        errorText = await response.text();
-        console.error(`[Backend API] Error response body:`, errorText);
+        const errorData = await response.json();
+        errorText = errorData.error || "Unknown error";
+        errorDetails = errorData.details || "";
+        console.error(`[Backend API] Error response:`, errorData);
       } catch (e) {
-        console.error(`[Backend API] Failed to read error response:`, e);
+        try {
+          errorText = await response.text();
+          console.error(`[Backend API] Error response body (text):`, errorText);
+        } catch (e2) {
+          console.error(`[Backend API] Failed to read error response:`, e2);
+        }
       }
       
-      if (response.status === 503) {
+      if (response.status === 503 || response.status === 504) {
         const error = new Error(
-          "Backend is still initializing. Please wait a moment and try again."
+          response.status === 503 
+            ? "Backend is still initializing. Please wait a moment and try again."
+            : "Backend request timeout. The server might be overloaded or unreachable."
         );
-        console.error(`[Backend API] Service unavailable:`, error);
+        console.error(`[Backend API] Service unavailable/timeout:`, error);
+        throw error;
+      }
+      
+      if (response.status === 502) {
+        const error = new Error(
+          `Failed to connect to backend: ${errorDetails || errorText || "Connection failed"}`
+        );
+        console.error(`[Backend API] Bad gateway:`, {
+          status: response.status,
+          errorText,
+          errorDetails,
+          url,
+        });
         throw error;
       }
       
       const error = new Error(
-        `Backend error (${response.status}): ${errorText || "Unknown error"}`
+        `Backend error (${response.status}): ${errorDetails || errorText || "Unknown error"}`
       );
       console.error(`[Backend API] HTTP error:`, {
         status: response.status,
         statusText: response.statusText,
         errorText,
+        errorDetails,
         url,
       });
       throw error;
@@ -259,9 +284,9 @@ export async function executeBiohackerAgent(
   } catch (error) {
     if (error instanceof Error) {
       if (error.name === "AbortError") {
-        console.error(`[Backend API] Request timeout after 30s to ${url}`);
+        console.error(`[Backend API] Request timeout after 7 minutes to ${url}`);
         throw new Error(
-          `Request timeout: Backend at ${url} did not respond within 30 seconds. The server might be overloaded or unreachable.`
+          `Request timeout: Backend at ${url} did not respond within 7 minutes. The server might be overloaded or unreachable.`
         );
       }
       
