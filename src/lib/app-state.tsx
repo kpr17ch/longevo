@@ -128,7 +128,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     // If we have a resolved plan, use its dates and generate metrics for exactly those days
     if (resolvedHabitPlan && resolvedHabitPlan.days.length > 0) {
       const planDates = resolvedHabitPlan.days.map((day) => day.date);
-      return generateMockMetrics(resolvedHabitPlan.days.length, primaryLever.type, planDates);
+      return generateMockMetrics(resolvedHabitPlan.days.length, primaryLever.type, planDates, resolvedHabitPlan);
     }
     
     return generateMockMetrics(14, primaryLever.type);

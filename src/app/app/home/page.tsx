@@ -139,13 +139,17 @@ export default function HomePage() {
         </Card>
 
         <Card className="p-6 space-y-4">
-          <div className="space-y-3">
+          <div className="space-y-4">
             <h2 className="text-lg font-semibold">
               Today's Progress
             </h2>
             {(() => {
               const todayStatus = habitStatuses.find((s) => s.date === today);
-              if (!todayStatus) {
+              const todayMetrics = todayStatus?.metrics;
+              const currentSteps = todayMetrics?.steps || 0;
+              const targetSteps = todayPlanDay?.targetSteps || 0;
+              
+              if (!todayStatus || !todayPlanDay) {
                 return (
                   <div className="space-y-2">
                     <p className="text-sm text-muted-foreground">
@@ -158,22 +162,55 @@ export default function HomePage() {
               const statusEmoji = todayStatus.status === "yes" ? "✅" : todayStatus.status === "partly" ? "⚠️" : "❌";
               const statusText = todayStatus.status === "yes" ? "On track" : todayStatus.status === "partly" ? "Almost there" : "Needs attention";
               const statusColor = todayStatus.status === "yes" ? "text-green-600" : todayStatus.status === "partly" ? "text-yellow-600" : "text-red-600";
+              const isGoalReached = currentSteps >= targetSteps;
+              const progressPercentage = targetSteps > 0 ? Math.min(100, (currentSteps / targetSteps) * 100) : 0;
 
               return (
-                <div className="space-y-3">
+                <div className="space-y-4">
                   <div className="flex items-center gap-3">
                     <span className="text-2xl">{statusEmoji}</span>
                     <div>
                       <p className={`font-semibold ${statusColor}`}>
                         {statusText}
                       </p>
-                      {todayStatus.reason && (
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {todayStatus.reason}
-                        </p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Target steps
+                      </p>
+                      <p className="text-3xl font-bold">
+                        {targetSteps.toLocaleString()}
+                      </p>
+                    </div>
+                    
+                    <div className="pt-2 border-t">
+                      <p className="text-xs text-muted-foreground mb-2">
+                        Steps walked today
+                      </p>
+                      <p className={`text-2xl font-bold ${isGoalReached ? "text-green-600" : ""}`}>
+                        {currentSteps.toLocaleString()}
+                      </p>
+                      {targetSteps > 0 && (
+                        <div className="mt-2">
+                          <div className="w-full bg-muted rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                isGoalReached ? "bg-green-600" : progressPercentage >= 70 ? "bg-yellow-500" : "bg-primary"
+                              }`}
+                              style={{ width: `${progressPercentage}%` }}
+                            />
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {Math.round(progressPercentage)}% of target
+                          </p>
+                        </div>
                       )}
                     </div>
                   </div>
+                  
                   <div className="pt-2 border-t">
                     <p className="text-xs text-muted-foreground">
                       Data automatically tracked from your connected devices
@@ -184,31 +221,6 @@ export default function HomePage() {
             })()}
           </div>
         </Card>
-
-        {todayPlanDay && (
-          <Card className="p-6 space-y-4">
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">
-                Today's Plan
-              </h2>
-              <div className="space-y-2">
-                <div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Target steps
-                  </p>
-                  <p className="text-3xl font-bold">
-                    {todayPlanDay.targetSteps.toLocaleString()}
-                  </p>
-                </div>
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-muted-foreground">
-                    {todayPlanDay.activity.split(":")[1]?.trim() || todayPlanDay.activity}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-        )}
 
         <Card className="p-6 space-y-4">
           <h2 className="text-lg font-semibold">How do you feel today?</h2>
@@ -274,43 +286,6 @@ export default function HomePage() {
           </p>
         </div>
 
-        {resolvedHabitPlan && resolvedHabitPlan.days.length > 0 && (
-          <Card className="p-6 space-y-4">
-            <div className="space-y-3">
-              <h2 className="text-lg font-semibold">
-                10-Day Plan
-              </h2>
-              <div className="flex gap-2">
-                {resolvedHabitPlan.days.map((planDay) => {
-                  const isToday = planDay.date === today;
-                  const status = habitStatuses.find((s) => s.date === planDay.date);
-                  const isCompleted = status?.status === "yes" || status?.status === "partly";
-                  let fillClass = "bg-muted border border-muted-foreground/20";
-                  let ringClass = "";
-
-                  if (isCompleted) {
-                    fillClass = "bg-primary border-primary";
-                  } else if (isToday) {
-                    fillClass = "bg-background border-2 border-primary";
-                    ringClass = "ring-2 ring-primary/20";
-                  }
-
-                  return (
-                    <div
-                      key={planDay.date}
-                      className={`flex-1 h-10 rounded transition-all ${fillClass} ${ringClass} ${
-                        isCompleted ? "scale-105" : ""
-                      } flex items-center justify-center text-xs font-medium`}
-                      title={`Day ${planDay.dayIndex} – ${planDay.targetSteps.toLocaleString()} steps: ${planDay.activity}`}
-                    >
-                      {planDay.dayIndex}
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>
-        )}
       </div>
       <ToastContainer toasts={toasts} onRemove={removeToast} />
     </div>

@@ -7,13 +7,34 @@ import type {
 } from "./tracking-types";
 import type { LeverResult, LeverType } from "./api-mock";
 
-function generateMockSteps(date: Date, targetSteps: number = 7000): number {
+function generateMockSteps(date: Date, targetSteps: number = 7000, dayIndex?: number): number {
   const dayOfWeek = date.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-  const baseSteps = isWeekend ? targetSteps * 0.7 : targetSteps;
-  const variance = baseSteps * 0.3;
-  const randomFactor = (Math.random() - 0.5) * 2;
-  return Math.max(0, Math.round(baseSteps + variance * randomFactor));
+  
+  let baseSteps = targetSteps;
+  
+  if (dayIndex !== undefined) {
+    baseSteps = targetSteps;
+  } else {
+    baseSteps = isWeekend ? targetSteps * 0.7 : targetSteps;
+  }
+  
+  let variance: number;
+  let randomFactor: number;
+  
+  if (dayIndex !== undefined) {
+    const seed = dayIndex * 17 + targetSteps;
+    const pseudoRandom = ((seed * 9301 + 49297) % 233280) / 233280;
+    variance = baseSteps * 0.12;
+    randomFactor = (pseudoRandom - 0.5) * 2;
+  } else {
+    variance = baseSteps * 0.15;
+    randomFactor = (Math.random() - 0.5) * 2;
+  }
+  
+  const steps = Math.max(0, Math.round(baseSteps + variance * randomFactor));
+  
+  return steps;
 }
 
 function generateMockSleep(date: Date, targetHours: number = 7): number {
@@ -58,7 +79,8 @@ function generateMockStressLevel(date: Date): number {
 export function generateMockMetrics(
   days: number = 14,
   leverType?: LeverType,
-  planDates?: string[]
+  planDates?: string[],
+  plan?: { days: Array<{ dayIndex: number; date: string; targetSteps: number }> }
 ): DailyMetrics[] {
   const metrics: DailyMetrics[] = [];
   const today = new Date();
@@ -67,10 +89,20 @@ export function generateMockMetrics(
   for (let i = 0; i < days; i++) {
     let dateStr: string;
     let date: Date;
+    let targetSteps: number | undefined;
+    let dayIndex: number | undefined;
     
     if (planDates && planDates[i]) {
       dateStr = planDates[i];
       date = new Date(dateStr);
+      
+      if (plan) {
+        const planDay = plan.days.find((d) => d.date === dateStr);
+        if (planDay) {
+          targetSteps = planDay.targetSteps;
+          dayIndex = planDay.dayIndex;
+        }
+      }
     } else {
       date = new Date(today);
       date.setDate(date.getDate() - i);
@@ -82,22 +114,22 @@ export function generateMockMetrics(
     };
 
     if (leverType === "movement") {
-      dayMetrics.steps = generateMockSteps(date, 7000);
+      dayMetrics.steps = generateMockSteps(date, targetSteps || 7000, dayIndex);
       dayMetrics.strengthWorkouts = generateMockStrengthWorkouts(date);
     } else if (leverType === "sleep") {
       dayMetrics.sleepMinutes = generateMockSleep(date, 7);
     } else if (leverType === "metabolic") {
-      dayMetrics.steps = generateMockSteps(date, 7000);
+      dayMetrics.steps = generateMockSteps(date, targetSteps || 7000, dayIndex);
       dayMetrics.weight = generateMockWeight(date, baseWeight);
       baseWeight = dayMetrics.weight;
       dayMetrics.calories = generateMockCalories(date, 2000);
     } else if (leverType === "stress") {
-      dayMetrics.steps = generateMockSteps(date, 5000);
+      dayMetrics.steps = generateMockSteps(date, targetSteps || 5000, dayIndex);
       dayMetrics.stressLevel = generateMockStressLevel(date);
       dayMetrics.weight = generateMockWeight(date, baseWeight);
       baseWeight = dayMetrics.weight;
     } else {
-      dayMetrics.steps = generateMockSteps(date, 7000);
+      dayMetrics.steps = generateMockSteps(date, targetSteps || 7000, dayIndex);
       dayMetrics.sleepMinutes = generateMockSleep(date, 7);
       dayMetrics.weight = generateMockWeight(date, baseWeight);
       baseWeight = dayMetrics.weight;

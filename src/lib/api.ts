@@ -48,7 +48,7 @@ export interface ApiResponse {
   };
 }
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://52.14.71.203:8000";
+const API_BASE_URL = "https://52.14.71.203:8443/execute";
 
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -184,7 +184,19 @@ export async function executeBiohackerAgent(
       };
     } else {
       // Fallback plan: 10-day walking habit with increasing step goals
-      const fallbackSteps = [8000, 8500, 9000, 9000, 9500, 10000, 10000, 10500, 11000, 12000];
+      // Day 1 starts at ~9000, each day adds ~500 with realistic variations
+      const generateRealisticSteps = (dayIndex: number): number => {
+        const baseSteps = 9000 + (dayIndex - 1) * 500;
+        const seed = dayIndex * 23 + 17;
+        const pseudoRandom = ((seed * 9301 + 49297) % 233280) / 233280;
+        const variation = Math.floor((pseudoRandom - 0.5) * 200);
+        return Math.max(8000, baseSteps + variation);
+      };
+      
+      const fallbackSteps = Array.from({ length: 10 }, (_, idx) => 
+        generateRealisticSteps(idx + 1)
+      );
+      
       plan = {
         interventionName: data.output.intervention_name || "Daily Walking Habit",
         durationDays: 10,
