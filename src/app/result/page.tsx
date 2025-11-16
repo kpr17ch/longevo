@@ -65,16 +65,6 @@ export default function ResultPage() {
                   );
                 })}
               </div>
-              {plan.successCriteria && (
-                <div className="pt-4 border-t">
-                  <p className="text-xs font-semibold text-muted-foreground mb-1">
-                    Success Criteria
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {plan.successCriteria}
-                  </p>
-                </div>
-              )}
             </Card>
           ) : (
             <Card className="p-6 space-y-4">
