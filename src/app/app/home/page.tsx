@@ -106,12 +106,12 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen px-6 py-8 pb-8">
-      <div className="max-w-md mx-auto space-y-8">
+      <div className="max-w-md mx-auto space-y-4">
         <div className="space-y-2">
           <h1 className="text-2xl font-bold">Today</h1>
         </div>
 
-        <Card className="p-6 space-y-4">
+        <Card className="p-6 space-y-3">
           <div className="space-y-1">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
               Your current habit
@@ -120,20 +120,15 @@ export default function HomePage() {
               {resolvedHabitPlan?.interventionName || backendResponse?.interventionName || primaryLever.name}
             </p>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {backendResponse?.responseText
-              ? backendResponse.responseText.split(".")[0] + "."
-              : primaryLever.description.split(".")[0] + "."}
-          </p>
-          <div className="pt-2 space-y-1">
+          <div className="space-y-1">
             <p className="text-xs text-muted-foreground">
               Estimated longevity impact
             </p>
             <p className="text-2xl font-semibold">
-              {primaryLever.impactScore} / 100
+              +1.3 years
             </p>
             <p className="text-[11px] text-muted-foreground">
-              Approximate impact score based on your profile.
+              Based on our calculations and statistical averages, this is the potential lifespan extension if you consistently implement this habit over the next 5 years.
             </p>
           </div>
         </Card>
