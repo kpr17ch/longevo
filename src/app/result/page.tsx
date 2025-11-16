@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 
 export default function ResultPage() {
   const router = useRouter();
-  const { primaryLever, backendResponse } = useAppState();
+  const { primaryLever, backendResponse, resolvedHabitPlan } = useAppState();
 
   useEffect(() => {
     if (!primaryLever) {
@@ -26,7 +26,7 @@ export default function ResultPage() {
   };
 
   const habitName = backendResponse?.interventionName || primaryLever.name;
-  const habitDescription = backendResponse?.responseText || primaryLever.description;
+  const plan = resolvedHabitPlan || backendResponse?.plan;
 
   return (
     <div className="fixed inset-0 flex flex-col bg-background overflow-y-auto">
@@ -41,12 +41,46 @@ export default function ResultPage() {
             </h1>
           </div>
 
-          <Card className="p-6 space-y-4">
-            <h2 className="text-xl font-semibold">Recommendation</h2>
-            <div className="text-base text-muted-foreground whitespace-pre-wrap">
-              {habitDescription}
-            </div>
-          </Card>
+          {plan && plan.days.length > 0 ? (
+            <Card className="p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Your 10-Day Plan</h2>
+              <div className="grid grid-cols-2 gap-3">
+                {plan.days.map((day) => (
+                  <div
+                    key={day.dayIndex}
+                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
+                  >
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
+                        {day.dayIndex}
+                      </div>
+                      <span className="text-sm font-medium">Day {day.dayIndex}</span>
+                    </div>
+                    <Badge variant="outline" className="text-xs">
+                      {day.targetSteps.toLocaleString()} steps
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+              {plan.successCriteria && (
+                <div className="pt-4 border-t">
+                  <p className="text-xs font-semibold text-muted-foreground mb-1">
+                    Success Criteria
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    {plan.successCriteria}
+                  </p>
+                </div>
+              )}
+            </Card>
+          ) : (
+            <Card className="p-6 space-y-4">
+              <h2 className="text-xl font-semibold">Recommendation</h2>
+              <div className="text-base text-muted-foreground whitespace-pre-wrap">
+                {backendResponse?.responseText || primaryLever.description}
+              </div>
+            </Card>
+          )}
 
           <Button
             onClick={handleContinue}
