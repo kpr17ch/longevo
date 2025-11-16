@@ -5,33 +5,25 @@ import { motion, AnimatePresence } from 'motion/react';
 import { useAppState } from '@/lib/app-state';
 import { BranchProgress } from '@/components/progress/branch-progress';
 import { cn } from '@/lib/utils';
+import { RadialIntro } from '@/components/animate-ui/components/community/radial-intro';
+import ShareButton from '@/components/animate-ui/components/community/share-button';
 
 export default function ProgressPage() {
-  const { habitStatuses, resolvedHabitPlan } = useAppState();
+  const { dailyEntries } = useAppState();
   const [isPlanted, setIsPlanted] = React.useState(false);
   const [isAnimating, setIsAnimating] = React.useState(false);
 
-  // Use unified streak logic based on habitStatuses and resolvedHabitPlan
+  // Streak-Logik bleibt unverändert
   const getStreakData = () => {
-    if (resolvedHabitPlan && resolvedHabitPlan.days.length > 0) {
-      // Count completed days from the plan
-      const completed = resolvedHabitPlan.days.filter((planDay) => {
-        const status = habitStatuses.find((s) => s.date === planDay.date);
-        return status?.status === 'yes' || status?.status === 'partly';
-      }).length;
-      return { completed, total: resolvedHabitPlan.days.length };
-    }
-
-    // Fallback: use habitStatuses directly
-    const last10Statuses = habitStatuses.slice(0, 10);
-    const completed = last10Statuses.filter((s) => s.status === 'yes' || s.status === 'partly').length;
+    const last10Days = dailyEntries.slice(0, 10);
+    const completed = last10Days.filter((e) => e.adherence === 'yes').length;
     return { completed, total: 10 };
   };
 
-  const { completed, total } = getStreakData();
+  const { completed } = getStreakData();
 
-  // Streak is complete when all plan days are completed
-  const isComplete = completed === total;
+  // Streak ist komplett bei 10/10
+  const isComplete = completed === 10;
 
   const handlePlantTree = () => {
     setIsAnimating(true);
@@ -51,30 +43,6 @@ export default function ProgressPage() {
 
   return (
     <div className="min-h-screen px-6 py-8 pb-24 bg-background relative overflow-hidden">
-      {/* Baum im Background (wenn gepflanzt) */}
-      <AnimatePresence>
-        {isPlanted && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.3 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, ease: 'easeOut' }}
-            className="fixed inset-0 pointer-events-none z-0 flex items-end justify-center"
-          >
-            <div className="w-full h-full max-w-md mx-auto flex items-end justify-center pb-20">
-              {/* Einfacher Baum - kann später erweitert werden */}
-              <div className="relative">
-                {/* Baumstamm */}
-                <div className="w-16 h-48 bg-gradient-to-b from-amber-900 to-amber-950 rounded-t-lg mx-auto" />
-                {/* Baumkrone */}
-                <div className="absolute -top-20 left-1/2 -translate-x-1/2 w-48 h-48 rounded-full bg-gradient-to-b from-emerald-500 to-emerald-700 opacity-80" />
-                <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-gradient-to-b from-emerald-400 to-emerald-600 opacity-90" />
-                <div className="absolute -top-12 left-1/2 -translate-x-1/2 w-32 h-32 rounded-full bg-gradient-to-b from-emerald-300 to-emerald-500" />
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       <div className="max-w-2xl mx-auto space-y-10 relative z-10">
         <div className="space-y-3 text-center">
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight">
@@ -219,7 +187,7 @@ export default function ProgressPage() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.7 }}
-              className="space-y-3"
+              className="space-y-4"
             >
               <h2 className="text-2xl font-semibold text-emerald-600">
                 Tree Planted!
@@ -231,8 +199,166 @@ export default function ProgressPage() {
             </motion.div>
           </motion.div>
         )}
+
+        {/* Hero Section - erscheint beim Scrollen */}
+        <motion.section
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-50px' }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="pt-20 pb-16 space-y-8"
+        >
+          {/* Hero Content */}
+          <div className="text-center space-y-6">
+            {/* Erster Text */}
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0 }}
+              className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-foreground"
+            >
+              Complete your set of 10 cards
+            </motion.h2>
+            
+            {/* Animierter Pfeil nach unten */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex justify-center"
+            >
+              <motion.svg
+                width="32"
+                height="32"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-emerald-500"
+                animate={{
+                  y: [0, 8, 0],
+                }}
+                transition={{
+                  duration: 1.5,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
+              >
+                <path d="M12 5v14" />
+                <path d="m19 12-7 7-7-7" />
+              </motion.svg>
+            </motion.div>
+            
+            {/* Zweiter Text */}
+            <motion.h2
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.6 }}
+              className="text-3xl md:text-4xl lg:text-5xl font-semibold tracking-tight text-emerald-500"
+            >
+              Once you do, we'll plant a real tree for you out in the world.
+            </motion.h2>
+
+            {/* Community Teil */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.9 }}
+              className="pt-12 space-y-4"
+            >
+              <h3 className="text-2xl md:text-3xl font-semibold tracking-tight">
+                Join our Community and Share your Progress
+              </h3>
+              <p className="text-sm md:text-base text-muted-foreground max-w-lg mx-auto">
+                Inspire others and watch your forest grow together with people around the world
+              </p>
+            </motion.div>
+
+            {/* Share Button */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 1.05 }}
+              className="flex justify-center pt-4"
+            >
+              <ShareButton 
+                size="lg" 
+                icon="prefix"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
+              >
+                Share
+              </ShareButton>
+            </motion.div>
+
+            {/* Radial Intro Animation */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: 1.2 }}
+              className="flex justify-center items-center py-8"
+            >
+              <RadialIntro orbitItems={COMMUNITY_ITEMS} stageSize={320} imageSize={60} />
+            </motion.div>
+          </div>
+        </motion.section>
       </div>
     </div>
   );
 }
 
+// Community Items für Radial Intro
+const COMMUNITY_ITEMS = [
+  {
+    id: 1,
+    name: 'User 1',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user1',
+  },
+  {
+    id: 2,
+    name: 'User 2',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user2',
+  },
+  {
+    id: 3,
+    name: 'User 3',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user3',
+  },
+  {
+    id: 4,
+    name: 'User 4',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user4',
+  },
+  {
+    id: 5,
+    name: 'User 5',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user5',
+  },
+  {
+    id: 6,
+    name: 'User 6',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user6',
+  },
+  {
+    id: 7,
+    name: 'User 7',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user7',
+  },
+  {
+    id: 8,
+    name: 'User 8',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user8',
+  },
+  {
+    id: 9,
+    name: 'User 9',
+    src: 'https://api.dicebear.com/7.x/avataaars/svg?seed=user9',
+  },
+];
