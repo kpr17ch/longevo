@@ -11,28 +11,31 @@ function generateMockSteps(date: Date, targetSteps: number = 7000, dayIndex?: nu
   const dayOfWeek = date.getDay();
   const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
   
-  let baseSteps = targetSteps;
-  
-  if (dayIndex !== undefined) {
-    baseSteps = targetSteps;
-  } else {
-    baseSteps = isWeekend ? targetSteps * 0.7 : targetSteps;
-  }
-  
+  let baseSteps: number;
   let variance: number;
   let randomFactor: number;
   
   if (dayIndex !== undefined) {
-    const seed = dayIndex * 17 + targetSteps;
+    // Für Plan-Tage: Verwende das Muster Tag 1 ~9000, Tag 2 ~9500, etc.
+    // mit realistischen Variationen, aber immer über targetSteps
+    const patternBaseSteps = 9000 + (dayIndex - 1) * 500;
+    const seed = dayIndex * 17 + 42;
     const pseudoRandom = ((seed * 9301 + 49297) % 233280) / 233280;
-    variance = baseSteps * 0.12;
+    variance = 200;
     randomFactor = (pseudoRandom - 0.5) * 2;
+    baseSteps = patternBaseSteps + variance * randomFactor;
+    
+    // Stelle sicher, dass wir immer über targetSteps liegen
+    const minSteps = targetSteps + 500;
+    baseSteps = Math.max(minSteps, baseSteps);
   } else {
+    // Für nicht-Plan-Tage: Verwende targetSteps mit normaler Logik
+    baseSteps = isWeekend ? targetSteps * 0.7 : targetSteps;
     variance = baseSteps * 0.15;
     randomFactor = (Math.random() - 0.5) * 2;
   }
   
-  const steps = Math.max(0, Math.round(baseSteps + variance * randomFactor));
+  const steps = Math.max(0, Math.round(baseSteps));
   
   return steps;
 }
