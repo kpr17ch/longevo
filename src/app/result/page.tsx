@@ -45,22 +45,25 @@ export default function ResultPage() {
             <Card className="p-6 space-y-4">
               <h2 className="text-xl font-semibold">Your 10-Day Plan</h2>
               <div className="grid grid-cols-2 gap-3">
-                {plan.days.map((day) => (
-                  <div
-                    key={day.dayIndex}
-                    className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
-                        {day.dayIndex}
+                {plan.days.map((day) => {
+                  const steps = day.targetSteps ?? 0;
+                  return (
+                    <div
+                      key={day.dayIndex}
+                      className="flex items-center justify-between p-3 rounded-lg border bg-muted/30"
+                    >
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-semibold">
+                          {day.dayIndex}
+                        </div>
+                        <span className="text-sm font-medium">Day {day.dayIndex}</span>
                       </div>
-                      <span className="text-sm font-medium">Day {day.dayIndex}</span>
+                      <Badge variant="outline" className="text-xs">
+                        {steps.toLocaleString()} steps
+                      </Badge>
                     </div>
-                    <Badge variant="outline" className="text-xs">
-                      {day.targetSteps.toLocaleString()} steps
-                    </Badge>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               {plan.successCriteria && (
                 <div className="pt-4 border-t">

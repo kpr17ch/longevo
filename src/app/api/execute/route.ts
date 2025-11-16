@@ -45,11 +45,13 @@ export async function POST(req: NextRequest) {
         
         res.on("end", () => {
           console.log(`[API Proxy] Backend response body length: ${responseData.length} characters`);
+          console.log(`[API Proxy] Backend response body:`, responseData);
           
           if (res.statusCode && res.statusCode >= 200 && res.statusCode < 300) {
             try {
               const data = JSON.parse(responseData);
               console.log(`[API Proxy] Successfully parsed backend response`);
+              console.log(`[API Proxy] Parsed data structure:`, JSON.stringify(data, null, 2));
               resolve(NextResponse.json(data));
             } catch (parseError) {
               console.error(`[API Proxy] Failed to parse backend JSON:`, parseError);
