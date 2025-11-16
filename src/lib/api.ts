@@ -48,7 +48,7 @@ export interface ApiResponse {
   };
 }
 
-const API_BASE_URL = "https://52.14.71.203:8443/execute";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "https://52.14.71.203:8443";
 
 export async function fileToBase64(file: File): Promise<string> {
   return new Promise((resolve, reject) => {
@@ -144,28 +144,67 @@ export function buildBackendPayload(
 export async function executeBiohackerAgent(
   payload: ApiInput
 ): Promise<BackendResponse> {
+  const url = `${API_BASE_URL}/execute`;
+  console.log(`[Backend API] Attempting to connect to: ${url}`);
+  console.log(`[Backend API] Payload size: ${JSON.stringify(payload).length} bytes`);
+  
   try {
-    const response = await fetch(`${API_BASE_URL}/execute`, {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+    
+    const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify(payload),
+      signal: controller.signal,
     });
 
+    clearTimeout(timeoutId);
+    
+    console.log(`[Backend API] Response status: ${response.status} ${response.statusText}`);
+    console.log(`[Backend API] Response headers:`, Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
+      let errorText = "";
+      try {
+        errorText = await response.text();
+        console.error(`[Backend API] Error response body:`, errorText);
+      } catch (e) {
+        console.error(`[Backend API] Failed to read error response:`, e);
+      }
+      
       if (response.status === 503) {
-        throw new Error(
+        const error = new Error(
           "Backend is still initializing. Please wait a moment and try again."
         );
+        console.error(`[Backend API] Service unavailable:`, error);
+        throw error;
       }
-      const errorText = await response.text();
-      throw new Error(
+      
+      const error = new Error(
         `Backend error (${response.status}): ${errorText || "Unknown error"}`
       );
+      console.error(`[Backend API] HTTP error:`, {
+        status: response.status,
+        statusText: response.statusText,
+        errorText,
+        url,
+      });
+      throw error;
     }
 
-    const data: ApiResponse = await response.json();
+    let data: ApiResponse;
+    try {
+      const responseText = await response.text();
+      console.log(`[Backend API] Response body length: ${responseText.length} characters`);
+      data = JSON.parse(responseText);
+      console.log(`[Backend API] Parsed response successfully`);
+    } catch (parseError) {
+      console.error(`[Backend API] Failed to parse JSON response:`, parseError);
+      throw new Error(`Failed to parse backend response as JSON: ${parseError instanceof Error ? parseError.message : String(parseError)}`);
+    }
 
     // Map challenge to HabitPlan if present, otherwise create fallback plan
     let plan: HabitPlan | undefined;
@@ -211,17 +250,71 @@ export async function executeBiohackerAgent(
       };
     }
 
+    console.log(`[Backend API] Successfully processed response`);
     return {
       interventionName: data.output.intervention_name || plan?.interventionName || null,
       responseText: data.output.response || "",
       plan,
     };
   } catch (error) {
-    if (error instanceof TypeError && error.message.includes("fetch")) {
-      throw new Error(
-        `Failed to connect to backend at ${API_BASE_URL}. Please check your connection.`
-      );
+    if (error instanceof Error) {
+      if (error.name === "AbortError") {
+        console.error(`[Backend API] Request timeout after 30s to ${url}`);
+        throw new Error(
+          `Request timeout: Backend at ${url} did not respond within 30 seconds. The server might be overloaded or unreachable.`
+        );
+      }
+      
+      if (error instanceof TypeError) {
+        if (error.message.includes("fetch")) {
+          console.error(`[Backend API] Network error:`, {
+            message: error.message,
+            url,
+            stack: error.stack,
+          });
+          throw new Error(
+            `Network error: Failed to connect to backend at ${url}. ` +
+            `Possible causes: CORS issue, SSL certificate problem, server unreachable, or network connectivity issue. ` +
+            `Original error: ${error.message}`
+          );
+        }
+        if (error.message.includes("Failed to fetch")) {
+          console.error(`[Backend API] Fetch failed:`, {
+            message: error.message,
+            url,
+            stack: error.stack,
+          });
+          throw new Error(
+            `Failed to fetch from backend at ${url}. ` +
+            `This could be a CORS issue, SSL certificate problem, or the server is not responding. ` +
+            `Original error: ${error.message}`
+          );
+        }
+      }
+      
+      if (error.message.includes("SSL") || error.message.includes("certificate")) {
+        console.error(`[Backend API] SSL/Certificate error:`, {
+          message: error.message,
+          url,
+          stack: error.stack,
+        });
+        throw new Error(
+          `SSL/Certificate error connecting to ${url}. ` +
+          `The server's SSL certificate might be invalid or self-signed. ` +
+          `Original error: ${error.message}`
+        );
+      }
+      
+      console.error(`[Backend API] Unknown error:`, {
+        name: error.name,
+        message: error.message,
+        stack: error.stack,
+        url,
+      });
+    } else {
+      console.error(`[Backend API] Non-Error object thrown:`, error);
     }
+    
     throw error;
   }
 }
