@@ -3,7 +3,7 @@ import https from "https";
 
 export const runtime = "nodejs";
 
-const BACKEND_URL = process.env.BACKEND_API_URL || "https://52.14.71.203:8443";
+const BACKEND_URL = process.env.BACKEND_API_URL || "https://localhost:8443";
 
 const httpsAgent = new https.Agent({
   rejectUnauthorized: false,
